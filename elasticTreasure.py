@@ -58,7 +58,7 @@ class ElasticTreasure:
 	
 
 	def __retrieveAllSnapshots(self):
-		response = requests.get(self.__elasticURI + "/_snapshot/mc_elasticsearch_backup/_all")
+		response = requests.get(self.__elasticURI + "/_snapshot/" + self.__repositoryName + "/_all")
 		return response
 	
 
@@ -81,13 +81,13 @@ class ElasticTreasure:
 
 	
 	def __sendDeleteRequest(self, snapshotName):
-		requests.delete(self.__elasticURI + "/_snapshot/mc_elasticsearch_backup/" + snapshotName) 
+		requests.delete(self.__elasticURI + "/_snapshot/" + self.__repositoryName + "/" + snapshotName) 
 
 
 	
 
 	def __backupExpirationInMillis(self):
-		expirationIntervalInMillis = self.__backupExpirationInDays * 60 * 1000
+		expirationIntervalInMillis = self.__backupExpirationInDays * 24 * 60 * 1000
 		return expirationIntervalInMillis	
 	
 
@@ -103,7 +103,7 @@ class ElasticTreasure:
 	def __sendBackupRequest(self):
 		repoStatus = self.__isRepositoryReady()
 		if(repoStatus):
-			response = requests.put(self.__elasticURI + "/_snapshot/mc_elasticsearch_backup/backup_" + self.__getCurrentDateTime(),
+			response = requests.put(self.__elasticURI + "/_snapshot/" + self.__repositoryName + "/backup_" + self.__getCurrentDateTime(),
 			headers=self.__requestHeader)
 			return response
 		
@@ -172,7 +172,7 @@ class ElasticTreasure:
 
 
 	def __buildAndSendMail(self, mailServer, message, response):
-		mailMessage = "From: ElasticGuard" + " <" + self.__sender + ">\nTo: To Person <" + self.__receiver + "> \nSubject: ElasticGuard backup report\n\n" + message + ": " + response.content
+		mailMessage = "From: ElasticTreasure" + " <" + self.__sender + ">\nTo: To Person <" + self.__receiver + "> \nSubject: ElasticTreasure backup report\n\n" + message + ": " + response.content
 		mailServer.sendmail(self.__sender, self.__receiver, mailMessage)
 		mailServer.quit()
 
