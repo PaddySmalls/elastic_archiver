@@ -8,16 +8,20 @@ import time
 class ElasticTreasure:
 
 	HTTP_OK = 200
+	HTTP_SERVER_ERROR = 500
+	HTTP_NOT_FOUND = 404
+
 	SUCCESS_MESSAGE = "Elasticsearch backup successful"
 	FAILURE_MESSAGE = "Elasticsearch backup failed"
 
 
 
-	def __init__(self, backupPath, repositoryName, backupExpirationInDays, elasticURI, smtpIP, mailSender, mailReceiver):  
+	def __init__(self, backupPath, repositoryName, backupExpirationInDays, elasticURI, sendMail=False, smtpIP="", mailSender="", mailReceiver=""):  
 		self.__backupPath = backupPath
 		self.__repositoryName = repositoryName
 		self.__backupExpirationInDays = backupExpirationInDays
 		self.__elasticURI = elasticURI
+		self.__sendMail = sendMail
 		self.__smtp = smtpIP
 		self.__sender = mailSender
 		self.__receiver = mailReceiver
@@ -49,6 +53,38 @@ class ElasticTreasure:
 		for s in snapshotList:
 			requests.delete(self.__elasticURI + "/_snapshot/" + self.__repositoryName + "/" + s["snapshot"])
 
+
+
+	def restoreBackup(self, snapshotID):
+		if(True == self.__snapshotExists(snapshotID)):
+			self.__sendRestoringRequest(snapshotID)
+
+
+
+
+
+
+### Restore existing backups
+
+
+	def __snapshotExists(self, snapshotID):
+		response = requests.get(self.__elasticURI + "/_snapshot/" + self.__repositoryName + "/" + snapshotID)
+		if(self.HTTP_OK == response.status_code):
+			return True
+                else:
+                        return False
+
+
+        def __sendRestoringRequest(self, snapshotID):
+                response = requests.post(self.__elasticURI + "/_snapshot/" + self.__repositoryName + "/" + snapshotID + "/_restore")
+                if(self.HTTP_OK == response.status_code):
+                        print "Successfully restored backup: " + backupID
+		elif(self.HTTP_SERVER_ERROR == response.status_code):
+			print "Error: Are you trying to restore an open index? - " + response.content
+                elif(self.HTTP_NOT_FOUND == response.status_code):
+                        print "Error: Unable to find snapshot with name " + snapshotID + ". - " + response.content
+		else:
+			print "Oops, something went wrong!"
 
 
 
@@ -143,9 +179,9 @@ class ElasticTreasure:
 
 
 	def __evalResponse(self, response):
-		if(self.HTTP_OK == response.status_code):
+		if(self.HTTP_OK == response.status_code and True == self.__sendMail):
 			self.__sendSuccessMail(response)
-		else:
+		elif(True == self.__sendMail):
 			self.__sendFailureMail(response)
 
 
