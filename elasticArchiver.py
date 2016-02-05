@@ -7,7 +7,7 @@ import time
 import logging
 import logging.handlers
 
-class ElasticTreasure:
+class ElasticArchiver:
 
 	HTTP_OK = 200
 	HTTP_SERVER_ERROR = 500
@@ -22,7 +22,7 @@ class ElasticTreasure:
 
 
 
-	def __init__(self, backupPath, repositoryName, backupExpirationInDays, elasticURI, sendMail=False, smtpIP="", mailSender="", mailReceiver=""):  
+	def __init__(self, backupPath, repositoryName, backupExpirationInDays, elasticURI, loggingPath, sendMail=False, smtpIP="", mailSender="", mailReceiver=""):  
 		self.__backupPath = backupPath
 		self.__repositoryName = repositoryName
 		self.__backupExpirationInDays = backupExpirationInDays
@@ -33,8 +33,9 @@ class ElasticTreasure:
 		self.__receiver = mailReceiver
 		self.__requestHeader = {'Content-Type':'application/json'}
 		self.__repoSettingsJSON = {"type":"fs", "settings": { "compress":"true", "location": self.__backupPath }}
+		self.__loggingPath = loggingPath
 
-		log_handler = logging.handlers.TimedRotatingFileHandler(filename="/home/patrick.kleindienst/elasticTreasure/logs/treasure.log", when='W6', backupCount=5)
+		log_handler = logging.handlers.TimedRotatingFileHandler(filename=self.__loggingPath + "/archiver.log", when='W6', backupCount=5)
 		formatter = logging.Formatter('%(asctime)s - ElasticTreasure: %(message)s', '%b %d %H:%M:%S')
 		log_handler.setFormatter(formatter)
 		logger = logging.getLogger()
