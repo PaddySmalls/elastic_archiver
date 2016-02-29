@@ -238,7 +238,7 @@ class ElasticArchiver:
 
 
 	def __buildAndSendMail(self, mailServer, message, response):
-		mailMessage = "From: ElasticTreasure" + " <" + self.__sender + ">\nTo: To Person <" + self.__receiver + "> \nSubject: ElasticTreasure backup report\n\n" + message + ": " + response.content
+		mailMessage = "From: ElasticArchiver" + " <" + self.__sender + ">\nTo: To Person <" + self.__receiver + "> \nSubject: ElasticArchiver backup report\n\n" + message + ": " + response.content
 		mailServer.sendmail(self.__sender, self.__receiver, mailMessage)
 		mailServer.quit()
 
